@@ -7,6 +7,8 @@ const mongoDbSession = require("connect-mongodb-session")(session);
 //file-imports
 require("./db");
 const AuthRouter = require("./Controllers/AuthController");
+const BlogRouter = require("./Controllers/BlogControler");
+const isAuth = require("./Middlewares/AuthMiddleware");
 
 //constants
 const app = express();
@@ -26,8 +28,9 @@ app.use(
     store: store,
   })
 );
-
 app.use("/auth", AuthRouter);
+app.use("/blog", isAuth, BlogRouter);
+
 app.listen(PORT, () => {
   console.log(
     clc.yellowBright.underline(`Blogging server is running port: ${PORT}`)

@@ -4,7 +4,7 @@
 
 const UserSchema = require("../Schemas/UserSchema");
 const bcrypt = require("bcrypt");
-
+const ObjectId = require("mongodb").ObjectId;
 //we will make it using class
 let User = class {
   username;
@@ -70,6 +70,19 @@ let User = class {
           $or: [{ email: loginId }, { username: loginId }],
         });
         if (!userDb) reject("User is not found, register first");
+        resolve(userDb);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  static findUserWithId({ userId }) {
+    return new Promise(async (resolve, reject) => {
+      if (!ObjectId.isValid(userId)) reject("invalid UserId format");
+      try {
+        const userDb = await UserSchema.findOne({ _id: userId });
+        if (!userDb) reject("User is not found");
         resolve(userDb);
       } catch (err) {
         reject(err);
