@@ -10,8 +10,9 @@ const {
   updateBlog,
   deleteBlog,
 } = require("../Models/BlockModel");
+const rateLimiting = require("../Middlewares/RateLimitingMiddleware");
 
-BlogRouter.post("/create-blog", async (req, res) => {
+BlogRouter.post("/create-blog", rateLimiting, async (req, res) => {
   const userId = req.session.user.userId;
   const { title, textBody } = req.body;
 
@@ -107,7 +108,7 @@ BlogRouter.get("/my-blogs", async (req, res) => {
   }
 });
 
-BlogRouter.post("/edit-blog", async (req, res) => {
+BlogRouter.post("/edit-blog", rateLimiting, async (req, res) => {
   const { title, textBody } = req.body.data;
   //verify userId
   const userId = req.session.user.userId;
@@ -163,7 +164,7 @@ BlogRouter.post("/edit-blog", async (req, res) => {
   }
 });
 
-BlogRouter.post("/delete-blog", async (req, res) => {
+BlogRouter.post("/delete-blog", rateLimiting, async (req, res) => {
   const blogId = req.body.blogId;
   const userId = req.session.user.userId;
 
