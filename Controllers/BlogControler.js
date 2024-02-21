@@ -2,14 +2,19 @@ const express = require("express");
 const User = require("../Models/UserModle");
 const BlogRouter = express.Router();
 const { blogDataValidate } = require("../Utils/BlogUtils");
-const { createBlog, getAllBlogs, getMyBlogs } = require("../Models/BlockModel");
+const {
+  createBlog,
+  getAllBlogs,
+  getMyBlogs,
+  getBlogWithId,
+  updateBlog,
+} = require("../Models/BlockModel");
 
 BlogRouter.post("/create-blog", async (req, res) => {
   const userId = req.session.user.userId;
   const { title, textBody } = req.body;
 
   const creationDateTime = new Date();
-  // console.log(userId);
   //data validation
   try {
     await blogDataValidate({ title, textBody });
@@ -99,6 +104,77 @@ BlogRouter.get("/my-blogs", async (req, res) => {
       error: error,
     });
   }
+});
+
+BlogRouter.post("/edit-blog", async (req, res) => {
+  const { title, textBody } = req.body.data;
+  //verify userId
+  const userId = req.session.user.userId;
+  const blogId = req.body.blogId;
+  //data validation
+  try {
+    await blogDataValidate({ title, textBody });
+    await User.findUserWithId({ userId });
+  } catch (error) {
+    return res.send({
+      status: 400,
+      message: "Data error",
+      error: error,
+    });
+  }
+
+  //find the blog with blodid
+  try {
+    //find the blog with blogId
+    const blogDb = await getBlogWithId({ blogId });
+    //check owernership by comparing session userid in client and db ie. userId and blogDb.userId
+    // if(userId.toString(), blogDb.userId.toString()) or you can use
+    if (!userId.equals(blogDb.userId)) {
+      return res.send({
+        status: 401,
+        message: "Not allow to edit, authorisation failed",
+      });
+    }
+    //check time < 30 mins -----> t2-t1
+    const diff =
+      (Date.now() - new Date(blogDb.creationDateTime).getTime()) / (1000 * 60);
+    console.log(diff);
+    if (diff > 30) {
+      return res.send({
+        status: 400,
+        message: "Not allow to edit after 30 mins of creation",
+      });
+    }
+
+    //update title and textBody
+    const blogPrev = await updateBlog({ blogId, title, textBody });
+    return res.send({
+      status: 200,
+      message: "Blog eddited succefully",
+      data: blogPrev,
+    });
+  } catch (error) {
+    return res.send({
+      status: 500,
+      message: "Database error",
+      error: error,
+    });
+  }
+
+  //   //update the title and textBody
+
+  //   return res.send({
+  //     status: 200,
+  //     message: "Blog edited successfully",
+  //     data: blogPrev,
+  //   });
+  // } catch (error) {
+  //   return res.send({
+  //     status: 500,
+  //     message: "Database error",
+  //     error: error,
+  //   });
+  // }
 });
 
 module.exports = BlogRouter;

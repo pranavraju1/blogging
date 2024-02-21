@@ -1,5 +1,6 @@
 const BlogSchema = require("../Schemas/BlogSchema");
 const { LIMIT } = require("../privateConstants");
+const ObjectId = require("mongodb").ObjectId;
 
 const createBlog = ({ title, textBody, userId, creationDateTime }) => {
   return new Promise(async (resolve, reject) => {
@@ -68,4 +69,43 @@ const getMyBlogs = ({ SKIP, userId }) => {
   });
 };
 
-module.exports = { createBlog, getAllBlogs, getMyBlogs };
+const getBlogWithId = ({ blogId }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!ObjectId.isValid(blogId)) reject("Invalid blogId format");
+      const blogDb = await BlogSchema.findOne({ _id: blogId });
+      if (!blogDb) reject(`No blog found with this ID: ${blogId}`);
+
+      resolve(blogDb);
+    } catch (error) {
+      console.log(error);
+      reject(error);
+    }
+  });
+};
+
+const updateBlog = ({ blogId, title, textBody }) => {
+  return new Promise(async (resolve, reject) => {
+    let newBlogData = {};
+
+    newBlogData.title = title;
+    newBlogData.textBody = textBody;
+    try {
+      const blogPrev = await BlogSchema.findOneAndUpdate(
+        { _id: blogId },
+        newBlogData
+      );
+      resolve(blogPrev);
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+module.exports = {
+  createBlog,
+  getAllBlogs,
+  getMyBlogs,
+  getBlogWithId,
+  updateBlog,
+};
