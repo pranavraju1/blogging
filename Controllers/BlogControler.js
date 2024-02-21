@@ -8,6 +8,7 @@ const {
   getMyBlogs,
   getBlogWithId,
   updateBlog,
+  deleteBlog,
 } = require("../Models/BlockModel");
 
 BlogRouter.post("/create-blog", async (req, res) => {
@@ -160,21 +161,34 @@ BlogRouter.post("/edit-blog", async (req, res) => {
       error: error,
     });
   }
+});
 
-  //   //update the title and textBody
+BlogRouter.post("/delete-blog", async (req, res) => {
+  const blogId = req.body.blogId;
+  const userId = req.session.user.userId;
 
-  //   return res.send({
-  //     status: 200,
-  //     message: "Blog edited successfully",
-  //     data: blogPrev,
-  //   });
-  // } catch (error) {
-  //   return res.send({
-  //     status: 500,
-  //     message: "Database error",
-  //     error: error,
-  //   });
-  // }
+  try {
+    const blogDb = await getBlogWithId({ blogId });
+
+    if (!userId.equals(blogDb.userId)) {
+      return res.send({
+        status: 401,
+        message: "Not allow to delete, authorisation failed.",
+      });
+    }
+    const blogPrev = await deleteBlog({ blogId });
+    return res.send({
+      status: 200,
+      message: "Delete successfull",
+      data: blogPrev,
+    });
+  } catch (error) {
+    return res.send({
+      status: 500,
+      message: "Database error",
+      error: error,
+    });
+  }
 });
 
 module.exports = BlogRouter;

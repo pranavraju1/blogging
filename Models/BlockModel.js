@@ -102,10 +102,22 @@ const updateBlog = ({ blogId, title, textBody }) => {
   });
 };
 
+const deleteBlog = ({ blogId }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const blogPrev = await BlogSchema.findOneAndDelete({ _id: blogId });
+      resolve(blogPrev);
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 module.exports = {
   createBlog,
   getAllBlogs,
   getMyBlogs,
   getBlogWithId,
   updateBlog,
+  deleteBlog,
 };
