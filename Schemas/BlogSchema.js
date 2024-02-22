@@ -15,7 +15,7 @@ const BlogSchema = new Schema({
     maxLength: 500,
   },
   creationDateTime: {
-    type: String,
+    type: Date, //if string will be sorted alphabetically
     required: true,
   },
   userId: {

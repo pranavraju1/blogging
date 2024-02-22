@@ -82,7 +82,7 @@ let User = class {
       if (!ObjectId.isValid(userId)) reject("invalid UserId format");
       try {
         const userDb = await UserSchema.findOne({ _id: userId });
-        if (!userDb) reject("User is not found");
+        if (!userDb) reject(`No user found with id: ${userId}`);
         resolve(userDb);
       } catch (err) {
         reject(err);

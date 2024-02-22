@@ -1,0 +1,12 @@
+if userA is following userB then in the user scema of userB 
+i will have a follow feild which is an array consisting the id of people whoe follow userB (ie id of userA)
+similarly there will be another feild following which consists of id of user's that userB follows
+
+the above method is not recomended bc when you hav millions of users and 1000's of followers and following it
+will become difficult to navigate and find and update or delete from these arrays also we will have to update 
+whole array by shifting the elements
+
+
+to solve that issue we can create a follow collection which has 2 fields followersUserId and followingUserId 
+and for every follow we will create a new entry in the feild with the above 2
+
