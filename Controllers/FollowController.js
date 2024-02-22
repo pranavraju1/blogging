@@ -5,9 +5,11 @@ const {
   followUser,
   followerUserList,
   followingUserList,
+  unFollowUser,
 } = require("../Models/FollowModel");
+const rateLimiting = require("../Middlewares/RateLimitingMiddleware");
 
-FollowRouter.post("/follow-user", async (req, res) => {
+FollowRouter.post("/follow-user", rateLimiting, async (req, res) => {
   const followerUserId = req.session.user.userId;
   const followingUserId = req.body.followingUserId;
   try {
@@ -65,6 +67,12 @@ FollowRouter.get("/followers-list", async (req, res) => {
   try {
     const data = await followerUserList({ followingUserId, SKIP });
 
+    if (data.length === 0) {
+      return res.send({
+        status: 400,
+        message: "No followers found",
+      });
+    }
     return res.send({
       status: 200,
       message: "Read success",
@@ -110,10 +118,45 @@ FollowRouter.get("/following-list", async (req, res) => {
   }
 });
 
-module.exports = FollowRouter;
+FollowRouter.post("/unfollow-user", async (req, res) => {
+  const followerUserId = req.session.user.userId;
+  const followingUserId = req.body.followingUserId;
 
-//test
-//test1--->test
-//test2--->test
-//test3--->test
-//test2--->test3
+  try {
+    await User.findUserWithId({ userId: followerUserId });
+  } catch (error) {
+    return res.send({
+      status: 400,
+      message: "Follower userid not found",
+      error: error,
+    });
+  }
+
+  try {
+    await User.findUserWithId({ userId: followingUserId });
+  } catch (error) {
+    return res.send({
+      status: 400,
+      message: "following userid not found",
+      error: error,
+    });
+  }
+
+  try {
+    const followDb = await unFollowUser({ followerUserId, followingUserId });
+
+    return res.send({
+      status: 200,
+      message: "Unfollow successfull",
+      daat: followDb,
+    });
+  } catch (error) {
+    return res.send({
+      status: 500,
+      message: "Database error",
+      error: error,
+    });
+  }
+});
+
+module.exports = FollowRouter;

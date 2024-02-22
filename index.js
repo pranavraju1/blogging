@@ -10,6 +10,7 @@ const AuthRouter = require("./Controllers/AuthController");
 const BlogRouter = require("./Controllers/BlogControler");
 const isAuth = require("./Middlewares/AuthMiddleware");
 const FollowRouter = require("./Controllers/FollowController");
+const cleanUpBin = require("./cron");
 
 //constants
 const app = express();
@@ -37,4 +38,5 @@ app.listen(PORT, () => {
   console.log(
     clc.yellowBright.underline(`Blogging server is running port: ${PORT}`)
   );
+  cleanUpBin();
 });

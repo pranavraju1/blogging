@@ -24,10 +24,16 @@ const createBlog = ({ title, textBody, userId, creationDateTime }) => {
 };
 
 //find -> sort -> pagination
-const getAllBlogs = ({ SKIP }) => {
+const getAllBlogs = ({ followingUserIds, SKIP }) => {
   return new Promise(async (resolve, reject) => {
     try {
       const blogDb = await BlogSchema.aggregate([
+        {
+          $match: {
+            userId: { $in: followingUserIds },
+            isDeleted: { $ne: true },
+          },
+        },
         {
           $sort: { creationDateTime: -1 }, //DESC for ASC in ascending order
         },
@@ -49,7 +55,7 @@ const getMyBlogs = ({ SKIP, userId }) => {
     try {
       const myBlogsDb = await BlogSchema.aggregate([
         {
-          $match: { userId: userId },
+          $match: { userId: userId, isDeleted: { $ne: true } },
         },
         {
           $sort: { creationDateTime: -1 }, //DESC
@@ -105,8 +111,13 @@ const updateBlog = ({ blogId, title, textBody }) => {
 const deleteBlog = ({ blogId }) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const blogPrev = await BlogSchema.findOneAndDelete({ _id: blogId });
-      resolve(blogPrev);
+      // const blogPrev = await BlogSchema.findOneAndDelete({ _id: blogId });
+      const deletedBlog = await BlogSchema.findOneAndUpdate(
+        { _id: blogId },
+        { isDeleted: true, deletionDateTime: new Date() }
+      );
+
+      resolve(deletedBlog);
     } catch (error) {
       reject(error);
     }

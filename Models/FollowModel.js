@@ -12,7 +12,7 @@ const followUser = ({ followerUserId, followingUserId }) => {
       });
 
       if (followExist) {
-        reject("Already following the user");
+        return reject("Already following the user");
       }
 
       //creating an object to store in db
@@ -73,7 +73,7 @@ const followerUserList = ({ followingUserId, SKIP }) => {
   });
 };
 
-const followingUserList = ({ followerUserId, SKIP }) => {
+const followingUserList = ({ followerUserId, SKIP, flag }) => {
   return new Promise(async (resolve, reject) => {
     try {
       const followingList = await FollowSchema.aggregate([
@@ -106,4 +106,22 @@ const followingUserList = ({ followerUserId, SKIP }) => {
   });
 };
 
-module.exports = { followUser, followerUserList, followingUserList };
+const unFollowUser = ({ followerUserId, followingUserId }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const followDb = await FollowSchema.findOneAndDelete({
+        followerUserId,
+        followingUserId,
+      });
+      resolve(followDb);
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+module.exports = {
+  followUser,
+  followerUserList,
+  followingUserList,
+  unFollowUser,
+};

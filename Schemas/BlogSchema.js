@@ -26,6 +26,15 @@ const BlogSchema = new Schema({
     ref: "user",
     // this is how you create a foreign key
   },
+  isDeleted: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
+  deletionDateTime: {
+    type: Date,
+    require: false,
+  },
 });
 
 module.exports = mongoose.model("blog", BlogSchema);

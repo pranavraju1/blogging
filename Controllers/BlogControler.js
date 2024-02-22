@@ -11,6 +11,7 @@ const {
   deleteBlog,
 } = require("../Models/BlockModel");
 const rateLimiting = require("../Middlewares/RateLimitingMiddleware");
+const { followerUserList } = require("../Models/FollowModel");
 
 BlogRouter.post("/create-blog", rateLimiting, async (req, res) => {
   const userId = req.session.user.userId;
@@ -57,8 +58,18 @@ BlogRouter.post("/create-blog", rateLimiting, async (req, res) => {
 //   /get-blogs?skip=6
 BlogRouter.get("/get-blogs", async (req, res) => {
   const SKIP = Number(req.query.skip) || 0;
+  const followerUserId = req.session.user.userId;
+
   try {
-    const blogDb = await getAllBlogs({ SKIP });
+    const followingUserData = await followingUserList({ followerUserId, SKIP });
+
+    let followingUserIds = [];
+    followingUserData.map((obj) => {
+      followingUserIds.push(obj._id);
+    });
+
+    const blogDb = await getAllBlogs({ followingUserIds, SKIP });
+
     if (blogDb.length === 0) {
       return res.send({
         status: 200,
